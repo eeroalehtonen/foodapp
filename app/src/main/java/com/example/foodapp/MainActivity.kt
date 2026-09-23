@@ -4,15 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,8 +28,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FoodApp() {
 
-    // Tänne tallennetaan käyttäjän kirjoittama ruokatuote
+    // Käyttäjän kirjoittama ruokatuote
     var foodName by remember { mutableStateOf("") }
+
+    // Käyttäjän kirjoittama viimeinen käyttöpäivä
+    var expirationDate by remember { mutableStateOf("") }
+
+    // Tänne tallennetaan tuotteet
+    var foodList by remember {
+        mutableStateOf(listOf<Pair<String, String>>())
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -62,8 +63,65 @@ fun FoodApp() {
                 modifier = Modifier.height(16.dp)
             )
 
-            // Päivämäärä tulee tähän seuraavaksi
-            Text("expiration date")
+            // Päivämäärän tekstikenttä
+            OutlinedTextField(
+                value = expirationDate,
+                onValueChange = { expirationDate = it },
+                label = {
+                    Text("Expiration date")
+                },
+                placeholder = {
+                    Text("DD.MM.YYYY")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            // Tallennusnappi
+            Button(
+                onClick = {
+
+                    if (foodName.isNotBlank() && expirationDate.isNotBlank()) {
+
+                        foodList = foodList + Pair(
+                            foodName,
+                            expirationDate
+                        )
+
+                        // Tyhjennetään kentät tallennuksen jälkeen
+                        foodName = ""
+                        expirationDate = ""
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save")
+            }
+
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            // Näytetään tallennetut tuotteet
+            Text("Saved products:")
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            foodList.forEach { food ->
+
+                Text(
+                    text = "${food.first} - ${food.second}"
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+            }
         }
     }
 }
