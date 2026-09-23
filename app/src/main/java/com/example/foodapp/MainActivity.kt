@@ -39,6 +39,9 @@ fun FoodApp() {
         mutableStateOf(listOf<Pair<String, String>>())
     }
 
+    var showSavedProducts by remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -49,78 +52,119 @@ fun FoodApp() {
                 .padding(top = 300.dp, start = 16.dp, end = 16.dp)
         ) {
 
-            // Ruokatuotteen tekstikenttä
-            OutlinedTextField(
-                value = foodName,
-                onValueChange = { foodName = it },
-                label = {
-                    Text("Food product")
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // TALLENNETTUJEN TUOTTEIDEN NÄKYMÄ
+            if (showSavedProducts) {
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+                Text("Saved products")
 
-            // Päivämäärän tekstikenttä
-            OutlinedTextField(
-                value = expirationDate,
-                onValueChange = { expirationDate = it },
-                label = {
-                    Text("Expiration date")
-                },
-                placeholder = {
-                    Text("DD.MM.YYYY")
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+                if (foodList.isEmpty()) {
+                    Text("No saved products")
+                }
 
-            // Tallennusnappi
-            Button(
-                onClick = {
+                foodList.forEach { food ->
 
-                    if (foodName.isNotBlank() && expirationDate.isNotBlank()) {
+                    Text(
+                        text = "${food.first} - ${food.second}"
+                    )
 
-                        foodList = foodList + Pair(
-                            foodName,
-                            expirationDate
-                        )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+                }
 
-                        // Tyhjennetään kentät tallennuksen jälkeen
-                        foodName = ""
-                        expirationDate = ""
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Save")
-            }
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
 
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
+                Button(
+                    onClick = {
+                        showSavedProducts = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Back")
+                }
 
-            // Näytetään tallennetut tuotteet
-            Text("Saved products:")
 
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
+            } else {
 
-            foodList.forEach { food ->
+                // TUOTTEEN LISÄYSNÄKYMÄ
 
-                Text(
-                    text = "${food.first} - ${food.second}"
+                Text("Add product")
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+                // Ruokatuotteen tekstikenttä
+                OutlinedTextField(
+                    value = foodName,
+                    onValueChange = { foodName = it },
+                    label = {
+                        Text("Food product")
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(
-                    modifier = Modifier.height(8.dp)
+                    modifier = Modifier.height(16.dp)
                 )
+                // Päivämäärän tekstikenttä
+                OutlinedTextField(
+                    value = expirationDate,
+                    onValueChange = { expirationDate = it },
+                    label = {
+                        Text("Expiration date")
+                    },
+                    placeholder = {
+                        Text("DD.MM.YYYY")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
+                // TALLENNUSNAPPI
+                Button(
+                    onClick = {
+
+                        if (
+                            foodName.isNotBlank() &&
+                            expirationDate.isNotBlank()
+                        ) {
+
+                            foodList = foodList + Pair(
+                                foodName,
+                                expirationDate
+                            )
+
+                            foodName = ""
+                            expirationDate = ""
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Save")
+                }
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
+                // AVAA TALLENNETUT TUOTTEET
+                Button(
+                    onClick = {
+                        showSavedProducts = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Saved products")
+                }
             }
         }
     }
