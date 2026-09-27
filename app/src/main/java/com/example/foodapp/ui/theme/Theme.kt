@@ -1,58 +1,106 @@
 package com.example.foodapp.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+
+
+// ----------------------------------------------------
+// TUMMA TEEMA
+// ----------------------------------------------------
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+
+    // Sovelluksen pääväri
+    primary = FridgeGreen,
+
+    // Tekstin väri vihreän päällä
+    onPrimary = Color.White,
+
+    // Tumma taustaväri
+    background = Color(0xFF182018),
+
+    // Teksti tummalla taustalla
+    onBackground = Color(0xFFF2F2E9),
+
+    // Korttien väri
+    surface = Color(0xFF243024),
+
+    // Teksti korttien päällä
+    onSurface = Color(0xFFF2F2E9),
+
+    // Reunusten väri
+    outline = FridgeOutline
 )
+
+
+// ----------------------------------------------------
+// VAALEA TEEMA
+// ----------------------------------------------------
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    // Pääväri
+    // Esimerkiksi Save-napin väri
+    primary = FridgeGreen,
+
+    // Teksti vihreän napin päällä
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+
+    // Sovelluksen lämmin vaalea tausta
+    background = FridgeBackground,
+
+    // Teksti taustan päällä
+    onBackground = FridgeDark,
+
+    // Korttien vaalea vihertävä tausta
+    surface = FridgeCard,
+
+    // Teksti korttien päällä
+    onSurface = FridgeDark,
+
+    // Reunusten väri
+    outline = FridgeOutline
 )
+
+
+// ----------------------------------------------------
+// SOVELLUKSEN TEEMA
+// ----------------------------------------------------
 
 @Composable
 fun FoodappTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    // Käyttää puhelimen tummaa teemaa,
+    // jos käyttäjällä on dark mode käytössä
+    darkTheme: Boolean = isSystemInDarkTheme(),
+
+    content: @Composable () -> Unit
+
+) {
+
+    // Valitaan tumma tai vaalea värimaailma
+    val colorScheme = if (darkTheme) {
+
+        DarkColorScheme
+
+    } else {
+
+        LightColorScheme
     }
 
+
+    // Annetaan valittu värimaailma koko sovellukselle
     MaterialTheme(
+
         colorScheme = colorScheme,
+
+        // Käytetään projektin Typography-asetuksia
         typography = Typography,
+
         content = content
     )
 }

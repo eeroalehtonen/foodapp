@@ -38,14 +38,25 @@ android {
 }
 
 dependencies {
+
+    // Androidin perustoiminnot
     implementation(libs.androidx.core.ktx)
+
+    // Activityn elinkaaren hallinta
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Jetpack Compose Activity
     implementation(libs.androidx.activity.compose)
+
+    // Compose BOM hallitsee Compose-kirjastojen versioita
     implementation(platform(libs.androidx.compose.bom))
+
+    // Compose käyttöliittymä
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

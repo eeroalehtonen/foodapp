@@ -4,167 +4,202 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+
+import com.example.foodapp.notification.ExpirationScheduler
+import com.example.foodapp.notification.NotificationHelper
+import com.example.foodapp.screens.AddProductScreen
+import com.example.foodapp.screens.SavedProductsScreen
+import com.example.foodapp.storage.FoodStorage
 import com.example.foodapp.ui.theme.FoodappTheme
 
+
+// Sovelluksen pääaktiviteetti
 class MainActivity : ComponentActivity() {
 
+    // Tätä kutsutaan, kun sovellus käynnistyy
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+        // Luodaan ilmoituskanava
+        NotificationHelper.createNotificationChannel(this)
+
+        // Mahdollistaa käyttöliittymän piirtämisen
+        // koko näytön alueelle
         enableEdgeToEdge()
 
+        // Käynnistetään Jetpack Compose
         setContent {
+
+            // Käytetään FoodAppin omaa teemaa
             FoodappTheme {
+
+                // Käynnistetään sovelluksen pääkomponentti
                 FoodApp()
             }
         }
     }
 }
 
+
+// Sovelluksen pääkomponentti
 @Composable
 fun FoodApp() {
 
-    // Käyttäjän kirjoittama ruokatuote
-    var foodName by remember { mutableStateOf("") }
+    // Haetaan Android Context
+    // Contextia tarvitaan tallennukseen ja ilmoituksiin
+    val context = LocalContext.current
 
-    // Käyttäjän kirjoittama viimeinen käyttöpäivä
-    var expirationDate by remember { mutableStateOf("") }
 
-    // Tänne tallennetaan tuotteet
+    // ------------------------------------------------
+    // TUOTELISTA
+    // ------------------------------------------------
+
+    // Kun sovellus käynnistyy, haetaan aikaisemmin
+    // tallennetut tuotteet FoodStoragesta
     var foodList by remember {
-        mutableStateOf(listOf<Pair<String, String>>())
+
+        mutableStateOf(
+            FoodStorage.loadProducts(context)
+        )
     }
 
+
+    // ------------------------------------------------
+    // NÄKYMÄN VAIHTAMINEN
+    // ------------------------------------------------
+
+    // false = tuotteen lisäämisnäkymä
+    // true = tallennettujen tuotteiden näkymä
     var showSavedProducts by remember {
         mutableStateOf(false)
     }
+
+
+    // ------------------------------------------------
+    // SOVELLUKSEN POHJA
+    // ------------------------------------------------
+
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+
+        // Sovellus käyttää koko näyttöä
+        modifier = Modifier.fillMaxSize(),
+
+        // Käytetään Fridgeifyn teemassa määriteltyä taustaväriä
+        containerColor = MaterialTheme.colorScheme.background
+
     ) { innerPadding ->
 
+
+        // Column asettaa elementit pystysuoraan
         Column(
+
             modifier = Modifier
+
+                // Huomioidaan esimerkiksi puhelimen yläpalkki
                 .padding(innerPadding)
-                .padding(top = 300.dp, start = 16.dp, end = 16.dp)
+
+                // Lisätään tyhjää tilaa reunoille
+                .padding(
+                    top = 40.dp,
+                    start = 20.dp,
+                    end = 20.dp
+                )
         ) {
 
-            // TALLENNETTUJEN TUOTTEIDEN NÄKYMÄ
+
+            // ------------------------------------------------
+            // SAVED PRODUCTS -NÄKYMÄ
+            // ------------------------------------------------
+
             if (showSavedProducts) {
 
-                Text("Saved products")
+                SavedProductsScreen(
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
+                    // Lähetetään nykyinen tuotelista näkymälle
+                    foodList = foodList,
 
-                if (foodList.isEmpty()) {
-                    Text("No saved products")
-                }
 
-                foodList.forEach { food ->
+                    // Suoritetaan kun käyttäjä painaa Delete
+                    onDelete = { product ->
 
-                    Text(
-                        text = "${food.first} - ${food.second}"
-                    )
+                        // Poistetaan tuote listasta
+                        foodList = foodList - product
 
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
-                }
-
-                Spacer(
-                    modifier = Modifier.height(24.dp)
-                )
-
-                Button(
-                    onClick = {
-                        showSavedProducts = false
+                        // Tallennetaan uusi lista puhelimeen
+                        FoodStorage.saveProducts(
+                            context,
+                            foodList
+                        )
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Back")
-                }
+
+
+                    // Back-nappi palauttaa lisäysnäkymään
+                    onBack = {
+
+                        showSavedProducts = false
+                    }
+                )
 
 
             } else {
 
-                // TUOTTEEN LISÄYSNÄKYMÄ
 
-                Text("Add product")
+                // ------------------------------------------------
+                // ADD PRODUCT -NÄKYMÄ
+                // ------------------------------------------------
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-                // Ruokatuotteen tekstikenttä
-                OutlinedTextField(
-                    value = foodName,
-                    onValueChange = { foodName = it },
-                    label = {
-                        Text("Food product")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                AddProductScreen(
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
-                // Päivämäärän tekstikenttä
-                OutlinedTextField(
-                    value = expirationDate,
-                    onValueChange = { expirationDate = it },
-                    label = {
-                        Text("Expiration date")
-                    },
-                    placeholder = {
-                        Text("DD.MM.YYYY")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
+                    // Suoritetaan kun käyttäjä painaa
+                    // Save product
+                    onSave = { product ->
 
-                // TALLENNUSNAPPI
-                Button(
-                    onClick = {
 
-                        if (
-                            foodName.isNotBlank() &&
-                            expirationDate.isNotBlank()
-                        ) {
+                        // Lisätään uusi tuote listaan
+                        foodList = foodList + product
 
-                            foodList = foodList + Pair(
-                                foodName,
-                                expirationDate
+
+                        // Tallennetaan päivitetty lista
+                        // puhelimen muistiin
+                        FoodStorage.saveProducts(
+                            context,
+                            foodList
+                        )
+
+
+                        // Ajastetaan ilmoitus päivää ennen
+                        // tuotteen vanhenemispäivää
+                        ExpirationScheduler
+                            .scheduleExpirationNotification(
+
+                                context = context,
+
+                                productName = product.name,
+
+                                expirationDate =
+                                    product.expirationDate
                             )
-
-                            foodName = ""
-                            expirationDate = ""
-                        }
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Save")
-                }
 
-                Spacer(
-                    modifier = Modifier.height(16.dp)
-                )
 
-                // AVAA TALLENNETUT TUOTTEET
-                Button(
-                    onClick = {
+                    // Saved products -nappi
+                    onShowSavedProducts = {
+
+                        // Vaihdetaan Saved products -näkymään
                         showSavedProducts = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Saved products")
-                }
+                    }
+                )
             }
         }
     }
