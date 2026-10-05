@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.foodapp.model.FoodProduct
+import com.example.foodapp.notification.NotificationHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,6 +24,8 @@ fun AddProductScreen(
     onSave: (FoodProduct) -> Unit,
     onShowSavedProducts: () -> Unit
 ) {
+    // Haetaan konteksti ilmoituksen lähettämistä varten
+    val context = LocalContext.current
 
     // Käyttäjän kirjoittama tuotteen nimi
     var foodName by remember {
@@ -82,7 +86,7 @@ fun AddProductScreen(
 
                 // Kortin otsikko
                 Text(
-                    text = "Add a product",
+                    text = "Lisää tuote",
                     fontSize = 22.sp
                 )
 
@@ -94,7 +98,7 @@ fun AddProductScreen(
                 // TUOTTEEN NIMI
 
                 Text(
-                    text = "Product name"
+                    text = "Tuotteen nimi"
                 )
 
                 Spacer(
@@ -109,7 +113,7 @@ fun AddProductScreen(
                     },
 
                     placeholder = {
-                        Text("e.g. Milk")
+                        Text("Esimerkiksi: Maito")
                     },
 
                     singleLine = true,
@@ -128,7 +132,7 @@ fun AddProductScreen(
                 // PÄIVÄMÄÄRÄ
 
                 Text(
-                    text = "Expiry / Best-before date"
+                    text = "Parasta ennen / Viimeinen käyttöpäivä"
                 )
 
                 Spacer(
@@ -149,7 +153,7 @@ fun AddProductScreen(
                         readOnly = true,
 
                         placeholder = {
-                            Text("Select date")
+                            Text("Valitse päivämäärä")
                         },
 
                         // Kalenteri-ikoni kentän oikeassa reunassa
@@ -217,7 +221,7 @@ fun AddProductScreen(
                         .height(50.dp)
                 ) {
 
-                    Text("Save product")
+                    Text("Lisää tuote")
                 }
 
 
@@ -239,7 +243,40 @@ fun AddProductScreen(
                         .height(50.dp)
                 ) {
 
-                    Text("View saved products")
+                    Text("Tallennetut tuotteet")
+                }
+
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+
+                // TESTINAPPULA ILMOITUKSELLE
+
+                Button(
+
+                    onClick = {
+                        val nameToNotify = if (foodName.isNotBlank()) foodName else "Milk"
+
+                        NotificationHelper.showNotification(
+                            context = context,
+                            productName = nameToNotify
+                        )
+                    },
+
+                    shape = RoundedCornerShape(12.dp),
+
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+
+                    Text("Testi-ilmoitus")
                 }
             }
         }
@@ -252,29 +289,22 @@ fun AddProductScreen(
 
     if (showDatePicker) {
 
-        // Kalenterin tila
         val datePickerState = rememberDatePickerState()
-
 
         DatePickerDialog(
 
-            // Suljetaan kalenteri jos käyttäjä painaa sen ulkopuolelle
             onDismissRequest = {
                 showDatePicker = false
             },
 
-
-            // OK-nappi
             confirmButton = {
 
                 TextButton(
 
                     onClick = {
 
-                        // Haetaan käyttäjän valitsema päivämäärä
                         datePickerState.selectedDateMillis?.let { millis ->
 
-                            // Muutetaan päivämäärä muotoon DD.MM.YYYY
                             val formatter =
                                 SimpleDateFormat(
                                     "dd.MM.yyyy",
@@ -287,7 +317,6 @@ fun AddProductScreen(
                                 )
                         }
 
-                        // Suljetaan kalenteri
                         showDatePicker = false
                     }
 
@@ -297,8 +326,6 @@ fun AddProductScreen(
                 }
             },
 
-
-            // Cancel-nappi
             dismissButton = {
 
                 TextButton(
@@ -315,7 +342,6 @@ fun AddProductScreen(
 
         ) {
 
-            // Varsinainen kalenteri
             DatePicker(
                 state = datePickerState
             )

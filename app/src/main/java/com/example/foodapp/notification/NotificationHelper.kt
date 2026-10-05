@@ -11,95 +11,45 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.foodapp.R
 
-
-// Hoitaa sovelluksen ilmoitusten luomisen ja näyttämisen
 object NotificationHelper {
 
-    // Ilmoituskanavan tunniste
-    private const val CHANNEL_ID = "expiration_channel"
+    private const val CHANNEL_ID = "expiration_channel_v2" // Vaihdettu ID kanavan nollaamiseksi
 
-
-    // Luo ilmoituskanavan Androidille
     fun createNotificationChannel(context: Context) {
-
-        // NotificationChannel tarvitaan Android 8.0 (API 26) ja uudemmissa
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            // Luodaan ilmoituskanava
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Expiration notifications",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH // KORKEA TÄRKEYSASTE
             ).apply {
-
-                // Ilmoituskanavan kuvaus
                 description = "Notifications about expiring food"
             }
 
-
-            // Haetaan Androidin NotificationManager
-            val notificationManager =
-                context.getSystemService(NotificationManager::class.java)
-
-
-            // Rekisteröidään ilmoituskanava
-            notificationManager.createNotificationChannel(channel)
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
         }
     }
 
-
-    // Näyttää ilmoituksen käyttäjälle
-    fun showNotification(
-        context: Context,
-        productName: String
-    ) {
-
-        // Rakennetaan ilmoitus
-        val notification =
-            NotificationCompat.Builder(
-                context,
-                CHANNEL_ID
-            )
-                // Ilmoituksen kuvake
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-
-                // Ilmoituksen otsikko
-                .setContentTitle("Product expiring soon")
-
-                // Ilmoituksen teksti
-                .setContentText("$productName expires tomorrow!")
-
-                // Ilmoituksen tärkeys
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-                // Ilmoitus poistuu, kun käyttäjä painaa sitä
-                .setAutoCancel(true)
-
-                // Rakennetaan valmis ilmoitus
-                .build()
-
-
-        // Android 13 ja uudemmat tarvitsevat
-        // POST_NOTIFICATIONS-luvan
-        if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
+    fun showNotification(context: Context, productName: String) {
+        // Luvan tarkistus Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
-
-            // Jos lupaa ei ole, ilmoitusta ei näytetä
             return
         }
 
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // Varma vakioikoni testaukseen
+            .setContentTitle("Tuote vanhenemassa")
+            .setContentText("$productName vanhenee pian!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // KORKEA PRIORITEETTI
+            .setDefaults(NotificationCompat.DEFAULT_ALL) // Ääni ja tärinä
+            .setAutoCancel(true)
+            .build()
 
-        // Näytetään ilmoitus
-        NotificationManagerCompat
-            .from(context)
-            .notify(
-                productName.hashCode(),
-                notification
-            )
+        NotificationManagerCompat.from(context).notify(
+            System.currentTimeMillis().toInt(), // Uniikki ID jokaiselle ilmoitukselle
+            notification
+        )
     }
 }
